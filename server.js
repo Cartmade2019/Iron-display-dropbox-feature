@@ -18,7 +18,7 @@ const { ACCESS_CODE_FROM_STEP_1 } = process.env;
 let { REFRESH_TOKEN } = process.env; // store this token from the first time & then use this token from the DB
 let ACCESS_TOKEN = '';
 let dbx;
-
+const path = require('path');
 const upload = multer({ dest: 'uploads/' });
 
 // Middleware to parse request body
@@ -136,6 +136,12 @@ app.post('/api/upload-file', upload.single('file'), async (req, res) => {
       }
   
       const filePath = file.path;
+      // Safely extract original name
+    const originalName = file.originalname || 'default-filename';
+    console.log('Original file name:', originalName);
+
+    const uniqueFileName = `${Date.now()}_${originalName}`;
+    console.log('uniqueFileName',uniqueFileName);
   
       const uploadResponse = await fetch('https://content.dropboxapi.com/2/files/upload', {
         method: 'POST',
@@ -143,7 +149,7 @@ app.post('/api/upload-file', upload.single('file'), async (req, res) => {
           'Authorization': `Bearer ${ACCESS_TOKEN}`,
           'Dropbox-API-Select-User': TEAM_MEMBER_ID,
           'Dropbox-API-Arg': JSON.stringify({
-            path: `/${file.originalname}`,
+            path: `/${uniqueFileName}`,
             mode: 'add',
             autorename: true,
             mute: false,
@@ -176,8 +182,9 @@ app.post('/api/upload-file', upload.single('file'), async (req, res) => {
         throw new Error(`Error creating shared link: ${sharedLinkResult.error_summary}`);
       }
   
-      const downloadLink = sharedLinkResult.url;
-  
+      const downloadLink = sharedLinkResult.url.replace('?dl=0', '?dl=1');
+
+
       // Clean up local file
       await fs.promises.unlink(filePath);
   
