@@ -68,62 +68,11 @@ async function refreshAccessToken() {
     });
 
     const data = await response.json();
-    console.log('Access Token Response:', data);
     ACCESS_TOKEN = data.access_token;
-    console.log('🚀 ~ refreshAccessToken ~ ACCESS_TOKEN:', ACCESS_TOKEN);
   } catch (error) {
-    console.error('Error refreshing access token:', error);
   }
 }
 
-// // POST endpoint to upload a file to Dropbox
-// app.post('/upload', upload.single('file'), async (req, res) => {
-//     try {
-//         await refreshAccessToken();
-//         dbx = new Dropbox({ accessToken: ACCESS_TOKEN });
-    
-//         const { file } = req;
-    
-//         if (!file) {
-//           return res.status(400).send('No file uploaded');
-//         }
-    
-//         const filePath = file.path;
-    
-//         const response = await dbx.filesUpload({
-//           path: `/${file.originalname}`,
-//           contents: fs.createReadStream(filePath),
-//         });
-    
-//         const sharedLinkResponse = await dbx.sharingCreateSharedLinkWithSettings({
-//           path: `/${file.originalname}`,
-//         });
-    
-//         console.log('Shared Link Response:', sharedLinkResponse);
-//         const downloadLink = sharedLinkResponse.result.url;
-    
-//         await fs.promises.unlink(filePath);
-    
-//         return res
-//           .status(200)
-//           .json({ message: 'File uploaded successfully', response, downloadLink });
-//       } catch (err) {
-//         console.error(err);
-//         return res.status(500).json({ message: 'Error uploading file' });
-//       }
-// });
-
-// try {
-//   getRefreshToken();
-// } catch (error) {
-//   console.log('🚀 ~ getRefreshToken:', error);
-// }
-
-// // Start the server
-// const PORT = process.env.PORT || 80;
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
 
 app.post('/api/upload-file', upload.single('file'), async (req, res) => {
     try {
@@ -138,10 +87,8 @@ app.post('/api/upload-file', upload.single('file'), async (req, res) => {
       const filePath = file.path;
       // Safely extract original name
     const originalName = file.originalname || 'default-filename';
-    console.log('Original file name:', originalName);
-
+   
     const uniqueFileName = `${Date.now()}_${originalName}`;
-    console.log('uniqueFileName',uniqueFileName);
   
       const uploadResponse = await fetch('https://content.dropboxapi.com/2/files/upload', {
         method: 'POST',
